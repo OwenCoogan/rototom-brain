@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <lvgl.h>
 #include "display.h"
+#include "pages.h"
 
 void setup() {
     Serial.begin(115200);
@@ -9,10 +10,8 @@ void setup() {
 
     display_init();
 
-    // Create a simple label
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Hello LVGL on WT32-SC01 PLUS");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    // Initialize pages system (creates home page and rototom pages)
+    pages_init();
 
     Serial.println("UI created");
 }

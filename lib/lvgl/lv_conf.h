@@ -7,7 +7,7 @@
    GRAPHICS SETTINGS
  *====================*/
 #define LV_COLOR_DEPTH 16
-#define LV_COLOR_16_SWAP 1  // Enable byte swap for better compatibility
+#define LV_COLOR_16_SWAP 0
 #define LV_HOR_RES_MAX 320
 #define LV_VER_RES_MAX 480
 
