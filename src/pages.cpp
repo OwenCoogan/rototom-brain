@@ -1,15 +1,18 @@
 #include "pages.h"
+#include "midi.h"
 #include <Arduino.h>
 #include <lvgl.h>
 
-// Screen objects for each page
 static lv_obj_t* home_screen = nullptr;
 static lv_obj_t* rototom1_screen = nullptr;
 static lv_obj_t* rototom2_screen = nullptr;
 
 static PageID current_page = PAGE_HOME;
 
-// Button event handlers
+static int rototom1_intensity = 100;
+static int rototom2_intensity = 100;
+static lv_obj_t* rototom1_intensity_label = nullptr;
+static lv_obj_t* rototom2_intensity_label = nullptr;
 static void btn_rototom1_clicked(lv_event_t* e) {
     pages_show_page(PAGE_ROTOTOM_1);
 }
@@ -22,57 +25,72 @@ static void btn_back_clicked(lv_event_t* e) {
     pages_show_page(PAGE_HOME);
 }
 
-// Create home page
+static void btn_midi_clicked(lv_event_t* e) {
+    Serial.println("MIDI button clicked");
+    int intensity = (current_page == PAGE_ROTOTOM_1) ? rototom1_intensity : rototom2_intensity;
+    midi_trigger(intensity);
+}
+
+static void intensity_slider_changed(lv_event_t* e) {
+    lv_obj_t* slider = lv_event_get_target(e);
+    int32_t value = lv_slider_get_value(slider);
+    
+    if (current_page == PAGE_ROTOTOM_1) {
+        rototom1_intensity = value;
+        if (rototom1_intensity_label) {
+            lv_label_set_text_fmt(rototom1_intensity_label, "Intensity: %d", value);
+        }
+    } else if (current_page == PAGE_ROTOTOM_2) {
+        rototom2_intensity = value;
+        if (rototom2_intensity_label) {
+            lv_label_set_text_fmt(rototom2_intensity_label, "Intensity: %d", value);
+        }
+    }
+}
+
 static void create_home_page() {
     home_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(home_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(home_screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // Title
     lv_obj_t* title = lv_label_create(home_screen);
     lv_label_set_text(title, "ROTOTOM BRAIN");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
-    // Use larger font if available
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
     
-    // Button for Rototom 1
     lv_obj_t* btn1 = lv_btn_create(home_screen);
-    lv_obj_set_size(btn1, 250, 80);  // Larger buttons for easier touch
+    lv_obj_set_size(btn1, 250, 80);
     lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -60);
     lv_obj_add_event_cb(btn1, btn_rototom1_clicked, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_event_cb(btn1, btn_rototom1_clicked, LV_EVENT_PRESSED, NULL);  // Also on press
+    lv_obj_add_event_cb(btn1, btn_rototom1_clicked, LV_EVENT_PRESSED, NULL);
     
     lv_obj_t* btn1_label = lv_label_create(btn1);
     lv_label_set_text(btn1_label, "ROTOTOM 1");
     lv_obj_center(btn1_label);
     
-    // Button for Rototom 2
     lv_obj_t* btn2 = lv_btn_create(home_screen);
-    lv_obj_set_size(btn2, 250, 80);  // Larger buttons for easier touch
+    lv_obj_set_size(btn2, 250, 80);
     lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 60);
     lv_obj_add_event_cb(btn2, btn_rototom2_clicked, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_event_cb(btn2, btn_rototom2_clicked, LV_EVENT_PRESSED, NULL);  // Also on press
+    lv_obj_add_event_cb(btn2, btn_rototom2_clicked, LV_EVENT_PRESSED, NULL);
     
     lv_obj_t* btn2_label = lv_label_create(btn2);
     lv_label_set_text(btn2_label, "ROTOTOM 2");
     lv_obj_center(btn2_label);
 }
 
-// Create Rototom 1 page
 static void create_rototom1_page() {
     rototom1_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(rototom1_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(rototom1_screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // Title
     lv_obj_t* title = lv_label_create(rototom1_screen);
     lv_label_set_text(title, "ROTOTOM 1");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
     
-    // Back button
     lv_obj_t* btn_back = lv_btn_create(rototom1_screen);
     lv_obj_set_size(btn_back, 150, 50);
     lv_obj_align(btn_back, LV_ALIGN_BOTTOM_MID, 0, -30);
@@ -82,28 +100,39 @@ static void create_rototom1_page() {
     lv_label_set_text(btn_back_label, "BACK");
     lv_obj_center(btn_back_label);
     
-    // Placeholder for rototom 1 content
-    lv_obj_t* content = lv_label_create(rototom1_screen);
-    lv_label_set_text(content, "Rototom 1 Controls\n\n(Add your controls here)");
-    lv_obj_set_style_text_color(content, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_align(content, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(content, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t* btn_midi = lv_btn_create(rototom1_screen);
+    lv_obj_set_size(btn_midi, 200, 60);
+    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -30);
+    lv_obj_add_event_cb(btn_midi, btn_midi_clicked, LV_EVENT_CLICKED, NULL);
+    
+    lv_obj_t* btn_midi_label = lv_label_create(btn_midi);
+    lv_label_set_text(btn_midi_label, "MIDI");
+    lv_obj_center(btn_midi_label);
+    
+    rototom1_intensity_label = lv_label_create(rototom1_screen);
+    lv_label_set_text_fmt(rototom1_intensity_label, "Intensity: %d", rototom1_intensity);
+    lv_obj_set_style_text_color(rototom1_intensity_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(rototom1_intensity_label, LV_ALIGN_CENTER, 0, 40);
+    
+    lv_obj_t* slider = lv_slider_create(rototom1_screen);
+    lv_obj_set_width(slider, 250);
+    lv_slider_set_range(slider, 0, 127);
+    lv_slider_set_value(slider, rototom1_intensity, LV_ANIM_OFF);
+    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 70);
+    lv_obj_add_event_cb(slider, intensity_slider_changed, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
-// Create Rototom 2 page
 static void create_rototom2_page() {
     rototom2_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(rototom2_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(rototom2_screen, LV_OPA_COVER, LV_PART_MAIN);
     
-    // Title
     lv_obj_t* title = lv_label_create(rototom2_screen);
     lv_label_set_text(title, "ROTOTOM 2");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
     
-    // Back button
     lv_obj_t* btn_back = lv_btn_create(rototom2_screen);
     lv_obj_set_size(btn_back, 150, 50);
     lv_obj_align(btn_back, LV_ALIGN_BOTTOM_MID, 0, -30);
@@ -113,18 +142,31 @@ static void create_rototom2_page() {
     lv_label_set_text(btn_back_label, "BACK");
     lv_obj_center(btn_back_label);
     
-    // Placeholder for rototom 2 content
-    lv_obj_t* content = lv_label_create(rototom2_screen);
-    lv_label_set_text(content, "Rototom 2 Controls\n\n(Add your controls here)");
-    lv_obj_set_style_text_color(content, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_align(content, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(content, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t* btn_midi = lv_btn_create(rototom2_screen);
+    lv_obj_set_size(btn_midi, 200, 60);
+    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -30);
+    lv_obj_add_event_cb(btn_midi, btn_midi_clicked, LV_EVENT_CLICKED, NULL);
+    
+    lv_obj_t* btn_midi_label = lv_label_create(btn_midi);
+    lv_label_set_text(btn_midi_label, "MIDI");
+    lv_obj_center(btn_midi_label);
+    
+    rototom2_intensity_label = lv_label_create(rototom2_screen);
+    lv_label_set_text_fmt(rototom2_intensity_label, "Intensity: %d", rototom2_intensity);
+    lv_obj_set_style_text_color(rototom2_intensity_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(rototom2_intensity_label, LV_ALIGN_CENTER, 0, 40);
+    
+    lv_obj_t* slider = lv_slider_create(rototom2_screen);
+    lv_obj_set_width(slider, 250);
+    lv_slider_set_range(slider, 0, 127);
+    lv_slider_set_value(slider, rototom2_intensity, LV_ANIM_OFF);
+    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 70);
+    lv_obj_add_event_cb(slider, intensity_slider_changed, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 void pages_init() {
     Serial.println("Initializing pages...");
     
-    // Create all pages
     create_home_page();
     Serial.println("Home page created");
     create_rototom1_page();
@@ -132,7 +174,6 @@ void pages_init() {
     create_rototom2_page();
     Serial.println("Rototom 2 page created");
     
-    // Show home page initially
     pages_show_page(PAGE_HOME);
     
     Serial.println("Pages initialized and home page displayed");
@@ -160,7 +201,6 @@ void pages_show_page(PageID page_id) {
         lv_scr_load(screen);
         current_page = page_id;
         Serial.printf("Switched to page %d (screen ptr: %p)\n", page_id, screen);
-        // Force a refresh
         lv_refr_now(NULL);
     } else {
         Serial.printf("ERROR: Screen is null for page %d\n", page_id);

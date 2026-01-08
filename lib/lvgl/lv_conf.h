@@ -49,7 +49,7 @@
 #define LV_USE_IMAGE 0
 #define LV_USE_CHART 0
 #define LV_USE_LINE 0
-#define LV_USE_SLIDER 0
+#define LV_USE_SLIDER 1
 #define LV_USE_SWITCH 0
 #define LV_USE_CHECKBOX 0
 #define LV_USE_DROPDOWN 0

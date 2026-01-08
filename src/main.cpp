@@ -2,6 +2,7 @@
 #include <lvgl.h>
 #include "display.h"
 #include "pages.h"
+#include "midi.h"
 
 void setup() {
     Serial.begin(115200);
@@ -10,7 +11,8 @@ void setup() {
 
     display_init();
 
-    // Initialize pages system (creates home page and rototom pages)
+    midi_init();
+
     pages_init();
 
     Serial.println("UI created");
