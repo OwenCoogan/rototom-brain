@@ -52,16 +52,19 @@ static void create_home_page() {
     home_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(home_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(home_screen, LV_OPA_COVER, LV_PART_MAIN);
+    // Remove padding for proper centering
+    lv_obj_set_style_pad_all(home_screen, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(home_screen, 0, LV_PART_MAIN);
     
     lv_obj_t* title = lv_label_create(home_screen);
     lv_label_set_text(title, "ROTOTOM BRAIN");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 20);
     
     lv_obj_t* btn1 = lv_btn_create(home_screen);
     lv_obj_set_size(btn1, 250, 80);
-    lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -60);
+    lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -50);
     lv_obj_add_event_cb(btn1, btn_rototom1_clicked, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(btn1, btn_rototom1_clicked, LV_EVENT_PRESSED, NULL);
     
@@ -71,7 +74,7 @@ static void create_home_page() {
     
     lv_obj_t* btn2 = lv_btn_create(home_screen);
     lv_obj_set_size(btn2, 250, 80);
-    lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 60);
+    lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 50);
     lv_obj_add_event_cb(btn2, btn_rototom2_clicked, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(btn2, btn_rototom2_clicked, LV_EVENT_PRESSED, NULL);
     
@@ -84,41 +87,57 @@ static void create_rototom1_page() {
     rototom1_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(rototom1_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(rototom1_screen, LV_OPA_COVER, LV_PART_MAIN);
+    // Remove padding for proper centering
+    lv_obj_set_style_pad_all(rototom1_screen, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(rototom1_screen, 0, LV_PART_MAIN);
     
+    // Back arrow button next to title (no outline, just arrow)
+    lv_obj_t* btn_back = lv_btn_create(rototom1_screen);
+    lv_obj_set_size(btn_back, 40, 40);
+    lv_obj_align(btn_back, LV_ALIGN_TOP_LEFT, 20, 20);
+    lv_obj_add_event_cb(btn_back, btn_back_clicked, LV_EVENT_CLICKED, NULL);
+    
+    // Remove button outline and background
+    lv_obj_set_style_bg_opa(btn_back, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(btn_back, 0, LV_PART_MAIN);
+    lv_obj_set_style_outline_width(btn_back, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(btn_back, 0, LV_PART_MAIN);
+    
+    lv_obj_t* btn_back_label = lv_label_create(btn_back);
+    lv_label_set_text(btn_back_label, LV_SYMBOL_LEFT);
+    lv_obj_set_style_text_color(btn_back_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_font(btn_back_label, &lv_font_montserrat_14, LV_PART_MAIN);
+    lv_obj_center(btn_back_label);
+    
+    // Title centered at top
     lv_obj_t* title = lv_label_create(rototom1_screen);
     lv_label_set_text(title, "ROTOTOM 1");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 20);
     
-    lv_obj_t* btn_back = lv_btn_create(rototom1_screen);
-    lv_obj_set_size(btn_back, 150, 50);
-    lv_obj_align(btn_back, LV_ALIGN_BOTTOM_MID, 0, -30);
-    lv_obj_add_event_cb(btn_back, btn_back_clicked, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t* btn_back_label = lv_label_create(btn_back);
-    lv_label_set_text(btn_back_label, "BACK");
-    lv_obj_center(btn_back_label);
-    
+    // MIDI button - centered horizontally, positioned in upper center
     lv_obj_t* btn_midi = lv_btn_create(rototom1_screen);
     lv_obj_set_size(btn_midi, 200, 60);
-    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -30);
+    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -40);
     lv_obj_add_event_cb(btn_midi, btn_midi_clicked, LV_EVENT_CLICKED, NULL);
     
     lv_obj_t* btn_midi_label = lv_label_create(btn_midi);
     lv_label_set_text(btn_midi_label, "MIDI");
     lv_obj_center(btn_midi_label);
     
+    // Intensity label - centered
     rototom1_intensity_label = lv_label_create(rototom1_screen);
     lv_label_set_text_fmt(rototom1_intensity_label, "Intensity: %d", rototom1_intensity);
     lv_obj_set_style_text_color(rototom1_intensity_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(rototom1_intensity_label, LV_ALIGN_CENTER, 0, 40);
+    lv_obj_align(rototom1_intensity_label, LV_ALIGN_CENTER, 0, 20);
     
+    // Slider - centered horizontally, wider for landscape
     lv_obj_t* slider = lv_slider_create(rototom1_screen);
-    lv_obj_set_width(slider, 250);
+    lv_obj_set_width(slider, 350);
     lv_slider_set_range(slider, 0, 127);
     lv_slider_set_value(slider, rototom1_intensity, LV_ANIM_OFF);
-    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 70);
+    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 60);
     lv_obj_add_event_cb(slider, intensity_slider_changed, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
@@ -126,41 +145,57 @@ static void create_rototom2_page() {
     rototom2_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(rototom2_screen, lv_color_hex(0x000000), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(rototom2_screen, LV_OPA_COVER, LV_PART_MAIN);
+    // Remove padding for proper centering
+    lv_obj_set_style_pad_all(rototom2_screen, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(rototom2_screen, 0, LV_PART_MAIN);
     
+    // Back arrow button next to title (no outline, just arrow)
+    lv_obj_t* btn_back = lv_btn_create(rototom2_screen);
+    lv_obj_set_size(btn_back, 40, 40);
+    lv_obj_align(btn_back, LV_ALIGN_TOP_LEFT, 20, 20);
+    lv_obj_add_event_cb(btn_back, btn_back_clicked, LV_EVENT_CLICKED, NULL);
+    
+    // Remove button outline and background
+    lv_obj_set_style_bg_opa(btn_back, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(btn_back, 0, LV_PART_MAIN);
+    lv_obj_set_style_outline_width(btn_back, 0, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(btn_back, 0, LV_PART_MAIN);
+    
+    lv_obj_t* btn_back_label = lv_label_create(btn_back);
+    lv_label_set_text(btn_back_label, LV_SYMBOL_LEFT);
+    lv_obj_set_style_text_color(btn_back_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_font(btn_back_label, &lv_font_montserrat_14, LV_PART_MAIN);
+    lv_obj_center(btn_back_label);
+    
+    // Title centered at top
     lv_obj_t* title = lv_label_create(rototom2_screen);
     lv_label_set_text(title, "ROTOTOM 2");
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 20);
     
-    lv_obj_t* btn_back = lv_btn_create(rototom2_screen);
-    lv_obj_set_size(btn_back, 150, 50);
-    lv_obj_align(btn_back, LV_ALIGN_BOTTOM_MID, 0, -30);
-    lv_obj_add_event_cb(btn_back, btn_back_clicked, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t* btn_back_label = lv_label_create(btn_back);
-    lv_label_set_text(btn_back_label, "BACK");
-    lv_obj_center(btn_back_label);
-    
+    // MIDI button - centered horizontally, positioned in upper center
     lv_obj_t* btn_midi = lv_btn_create(rototom2_screen);
     lv_obj_set_size(btn_midi, 200, 60);
-    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -30);
+    lv_obj_align(btn_midi, LV_ALIGN_CENTER, 0, -40);
     lv_obj_add_event_cb(btn_midi, btn_midi_clicked, LV_EVENT_CLICKED, NULL);
     
     lv_obj_t* btn_midi_label = lv_label_create(btn_midi);
     lv_label_set_text(btn_midi_label, "MIDI");
     lv_obj_center(btn_midi_label);
     
+    // Intensity label - centered
     rototom2_intensity_label = lv_label_create(rototom2_screen);
     lv_label_set_text_fmt(rototom2_intensity_label, "Intensity: %d", rototom2_intensity);
     lv_obj_set_style_text_color(rototom2_intensity_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(rototom2_intensity_label, LV_ALIGN_CENTER, 0, 40);
+    lv_obj_align(rototom2_intensity_label, LV_ALIGN_CENTER, 0, 20);
     
+    // Slider - centered horizontally, wider for landscape
     lv_obj_t* slider = lv_slider_create(rototom2_screen);
-    lv_obj_set_width(slider, 250);
+    lv_obj_set_width(slider, 350);
     lv_slider_set_range(slider, 0, 127);
     lv_slider_set_value(slider, rototom2_intensity, LV_ANIM_OFF);
-    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 70);
+    lv_obj_align(slider, LV_ALIGN_CENTER, 0, 60);
     lv_obj_add_event_cb(slider, intensity_slider_changed, LV_EVENT_VALUE_CHANGED, NULL);
 }
 

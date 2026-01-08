@@ -104,6 +104,9 @@ void my_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p
     lv_disp_flush_ready(disp);
 }
 
+// Store the display rotation for touch coordinate mapping
+static int display_rotation = 1;
+
 void my_touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data) {
     static int16_t last_x = 0, last_y = 0;
     static bool last_touched = false;
@@ -123,12 +126,49 @@ void my_touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data) {
     bool touched = display.getTouch(&last_x, &last_y);
     
     if (touched) {
-        int16_t x = last_x;
-        int16_t y = last_y;
+        // Transform touch coordinates based on display rotation
+        // Touch hardware reports coordinates in native orientation
+        // Need to transform based on how display is rotated
+        int16_t x, y;
+        int16_t current_width = display.width();
+        int16_t current_height = display.height();
+        
+        // Transform coordinates based on rotation
+        // Rotation 0: 480x320 (landscape) - swap x/y and invert y
+        // Rotation 1: 320x480 (portrait) - use as-is
+        // Rotation 2: 480x320 (landscape) - swap x/y and invert both
+        // Rotation 3: 320x480 (portrait) - swap x/y
+        switch(display_rotation) {
+            case 0: // Landscape 480x320
+                x = last_y;
+                y = current_height - last_x;
+                break;
+            case 1: // Portrait 320x480
+                x = last_x;
+                y = last_y;
+                break;
+            case 2: // Landscape 480x320 (flipped)
+                x = current_width - last_y;
+                y = current_height - last_x;
+                break;
+            case 3: // Portrait 320x480 (flipped)
+                x = current_width - last_x;
+                y = last_y;
+                break;
+            default:
+                x = last_x;
+                y = last_y;
+                break;
+        }
+        
+        // Clamp to display bounds
+        x = constrain(x, 0, current_width - 1);
+        y = constrain(y, 0, current_height - 1);
         
         uint32_t now = millis();
         if (!last_touched || (now - last_debug_time > 200)) {
-            Serial.printf("Touch detected: x=%d, y=%d\n", x, y);
+            Serial.printf("Touch detected: raw=(%d,%d) mapped=(%d,%d) rotation=%d display=%dx%d\n", 
+                         last_x, last_y, x, y, display_rotation, current_width, current_height);
             last_debug_time = now;
         }
         
@@ -161,46 +201,48 @@ void display_init() {
     int16_t display_height = display.height();
     Serial.printf("Display size: %dx%d\n", display_width, display_height);
     
+    // Find landscape orientation (480x320, width > height)
     int best_rotation = 1;
     display.setRotation(1);
     display_width = display.width();
     display_height = display.height();
     Serial.printf("Rotation 1: %dx%d\n", display_width, display_height);
     
-    if (display_width != 320 || display_height != 480) {
+    if (display_width != 480 || display_height != 320) {
         display.setRotation(0);
         display_width = display.width();
         display_height = display.height();
         Serial.printf("Rotation 0: %dx%d\n", display_width, display_height);
-        if (display_width == 320 && display_height == 480) {
+        if (display_width == 480 && display_height == 320) {
             best_rotation = 0;
         }
     }
     
-    if (display_width != 320 || display_height != 480) {
+    if (display_width != 480 || display_height != 320) {
         display.setRotation(2);
         display_width = display.width();
         display_height = display.height();
         Serial.printf("Rotation 2: %dx%d\n", display_width, display_height);
-        if (display_width == 320 && display_height == 480) {
+        if (display_width == 480 && display_height == 320) {
             best_rotation = 2;
         }
     }
     
-    if (display_width != 320 || display_height != 480) {
+    if (display_width != 480 || display_height != 320) {
         display.setRotation(3);
         display_width = display.width();
         display_height = display.height();
         Serial.printf("Rotation 3: %dx%d\n", display_width, display_height);
-        if (display_width == 320 && display_height == 480) {
+        if (display_width == 480 && display_height == 320) {
             best_rotation = 3;
         }
     }
     
     display.setRotation(best_rotation);
+    display_rotation = best_rotation;  // Store rotation for touch coordinate mapping
     display_width = display.width();
     display_height = display.height();
-    Serial.printf("Final rotation %d: %dx%d\n", best_rotation, display_width, display_height);
+    Serial.printf("Final rotation %d: %dx%d (LANDSCAPE)\n", best_rotation, display_width, display_height);
     
     display.fillScreen(TFT_BLACK);
     
@@ -232,9 +274,10 @@ void display_init() {
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf = &draw_buf;
     disp_drv.flush_cb = my_flush_cb;
-    disp_drv.hor_res = 320;
-    disp_drv.ver_res = 480;
-    Serial.printf("LVGL resolution set to: %dx%d (display reports %dx%d)\n", 
+    // Set LVGL resolution to match landscape orientation (480x320)
+    disp_drv.hor_res = display_width;  // 480 for landscape
+    disp_drv.ver_res = display_height; // 320 for landscape
+    Serial.printf("LVGL resolution set to: %dx%d (LANDSCAPE - display reports %dx%d)\n", 
                   disp_drv.hor_res, disp_drv.ver_res, display.width(), display.height());
     lv_disp_t * disp = lv_disp_drv_register(&disp_drv);
     if (disp) {

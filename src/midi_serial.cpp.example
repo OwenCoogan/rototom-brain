@@ -1,0 +1,71 @@
+// VERSION SERIAL MIDI - Pour utiliser avec le pont Python
+// Remplacez le contenu de midi.cpp par ce code si vous voulez utiliser le pont Python
+
+#include "midi.h"
+#include <Arduino.h>
+
+// Manual MIDI message sending for USB CDC Serial
+// MIDI messages are sent as raw bytes over Serial
+// This version works with the Python bridge script
+
+void midi_init() {
+  // Serial is already initialized in main.cpp
+  // Give USB time to initialize if needed
+  delay(100);
+  
+  Serial.println("\n=== Serial MIDI Initialized ===");
+  Serial.println("Device: ESP32-S3 MIDI Controller");
+  Serial.println("MIDI messages will be sent over USB Serial");
+  Serial.println("Use Python bridge script to connect to GarageBand");
+  Serial.println("Run: python3 serial_midi_bridge.py /dev/cu.usbmodem* 115200");
+  Serial.println("============================\n");
+}
+
+// Send a MIDI Note On message
+// Format: [0x90 + channel-1] [note] [velocity]
+void midi_note_on(int note, int velocity) {
+  // Clamp values to valid MIDI range
+  note = constrain(note, 0, 127);
+  velocity = constrain(velocity, 0, 127);
+  
+  // MIDI Note On: 0x90 + channel (0-15), so channel 1 = 0x90
+  // Channel is 1-based in our API, but 0-based in MIDI protocol
+  uint8_t status = 0x90 + (MIDI_CHANNEL - 1);
+  
+  // Send MIDI message: status byte, note, velocity
+  Serial.write(status);
+  Serial.write(note);
+  Serial.write(velocity);
+  Serial.flush(); // Ensure data is sent immediately
+  
+  Serial.printf("MIDI: Note On - note=%d, velocity=%d\n", note, velocity);
+}
+
+// Send a MIDI Note Off message
+// Format: [0x80 + channel-1] [note] [velocity (usually 0)]
+void midi_note_off(int note) {
+  // Clamp note to valid MIDI range
+  note = constrain(note, 0, 127);
+  
+  // MIDI Note Off: 0x80 + channel (0-15), so channel 1 = 0x80
+  uint8_t status = 0x80 + (MIDI_CHANNEL - 1);
+  
+  // Send MIDI message: status byte, note, velocity (0 for note off)
+  Serial.write(status);
+  Serial.write(note);
+  Serial.write(0); // Velocity 0 for note off
+  Serial.flush(); // Ensure data is sent immediately
+  
+  Serial.printf("MIDI: Note Off - note=%d\n", note);
+}
+
+void midi_trigger(int intensity) {
+  // Intensity is already 0-127 from the slider, map to 1-127 to avoid velocity 0
+  int velocity = map(constrain(intensity, 0, 127), 0, 127, 1, 127);
+  
+  // Trigger a note (default MIDI note 60 = C4)
+  midi_note_on(DEFAULT_MIDI_NOTE, velocity);
+  delay(10);
+  midi_note_off(DEFAULT_MIDI_NOTE);
+}
+
