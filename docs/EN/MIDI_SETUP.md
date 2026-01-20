@@ -122,7 +122,7 @@ Cela crée un port MIDI virtuel que le script Python peut utiliser.
 5. Chargez un instrument sur la piste
 6. Appuyez sur le bouton MIDI de votre ESP32 - vous devriez entendre un son !
 
-**See `../FR/VERIFIER_GARAGEBAND_FR.md` for detailed verification steps.**
+**See `VERIFIER_GARAGEBAND_FR.md` for detailed verification steps.**
 
 The script will display MIDI messages as they're received, which helps with debugging.
 
@@ -177,7 +177,7 @@ Since Hairless doesn't work on newer macOS versions, here's the quickest way to 
    - **English**: Audio MIDI Setup > Window > Show MIDI Studio > IAC Driver > Device is online
    - **Français**: Configuration Audio MIDI > Fenêtre > Afficher le Studio MIDI > Pilote IAC > Périphérique en ligne
    
-   See `../FR/IAC_DRIVER_FR.md` for detailed French instructions.
+   See `IAC_DRIVER_FR.md` for detailed French instructions.
 
 3. **Find your device port:**
    ```bash

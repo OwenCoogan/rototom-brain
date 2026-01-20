@@ -258,3 +258,27 @@ lv_obj_t* pages_get_screen(PageID page_id) {
             return home_screen;
     }
 }
+
+// Handle piezo pad hits - map pad 0 (GPIO1/tom 1) to rototom 1 page
+void pages_onPadHit(int padIndex, int intensity) {
+    // Pad 0 = Tom 1 on GPIO1 -> Rototom 1 page
+    if (padIndex == 0) {
+        // Update intensity label (only if we're on rototom1 page)
+        if (current_page == PAGE_ROTOTOM_1 && rototom1_intensity_label) {
+            lv_label_set_text_fmt(rototom1_intensity_label, "Intensity: %d", intensity);
+        }
+        
+        // Update stored intensity value
+        rototom1_intensity = intensity;
+        
+        // Send MIDI note with velocity based on intensity
+        midi_note_on(60, intensity);  // Note 60 (C4) for tom 1
+        Serial.printf("Tom 1 (GPIO1) hit - Intensity: %d, MIDI Note: 60, Velocity: %d\n", intensity, intensity);
+    }
+}
+
+// Reset button color when pad becomes inactive (placeholder - not modifying UI for now)
+void pages_resetButtonColor(int padIndex) {
+    // No-op for now to avoid display issues
+    (void)padIndex;  // Suppress unused parameter warning
+}

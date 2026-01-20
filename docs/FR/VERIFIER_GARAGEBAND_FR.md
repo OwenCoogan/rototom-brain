@@ -184,6 +184,7 @@ Avant de tester dans GarageBand, vérifiez :
 - [ ] La piste n'est pas en sourdine
 
 Si tous ces points sont vérifiés et que ça ne fonctionne toujours pas, consultez les guides de dépannage :
-- `../EN/MIDI_TROUBLESHOOTING.md`
+- `MIDI_TROUBLESHOOTING.md`
 - `ACTIVER_IAC_FR.md`
 - `VERIFICATION_MIDI_FR.md`
+

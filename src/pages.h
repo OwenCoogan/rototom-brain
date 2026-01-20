@@ -11,3 +11,5 @@ void pages_init();
 void pages_show_page(PageID page_id);
 PageID pages_get_current();
 lv_obj_t* pages_get_screen(PageID page_id);
+void pages_onPadHit(int padIndex, int intensity);
+void pages_resetButtonColor(int padIndex);
